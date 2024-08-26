@@ -1,4 +1,15 @@
 import matplotlib.pyplot as plt
+import json
+import os
+
+# Función para cargar datos desde JSON
+
+
+def cargar_datos():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    json_file_path = os.path.join(base_dir, '../outputs/resultados.json')
+    with open(json_file_path, 'r') as file:
+        return json.load(file)
 
 # Función para encontrar la provincia con el máximo valor en cada categoría
 
@@ -23,35 +34,49 @@ def maximo_por_categoria(datos):
 # Función para graficar el máximo
 
 
-def graficar_maximos(maximos):
-    categorias = ["Defunciones", "Casos", "Hospitalizados", "UCI"]
-    valores = [maximos[key]["valor"] for key in maximos]
-    provincias = [maximos[key]["provincia"] for key in maximos]
+def graficar_maximo(categoria, maximos):
+    categoria_nombres = {
+        "num_def": "Defunciones",
+        "new_cases": "Casos",
+        "num_hosp": "Hospitalizados",
+        "num_uci": "UCI"
+    }
 
-    for i in range(4):
-        plt.pie([valores[i], sum(valores) - valores[i]],
-                labels=[provincias[i], 'Otros'], autopct='%1.1f%%')
-        plt.title(f'Máximo de {categorias[i]} en {provincias[i]}')
-        plt.show()
+    plt.pie([maximos[categoria]["valor"], 1], labels=[
+            maximos[categoria]["provincia"], 'Otros'], autopct='%1.1f%%')
+    plt.title(f'Máximo de {categoria_nombres[categoria]} en {
+              maximos[categoria]["provincia"]}')
+    plt.show()
+    plt.close()
 
 
-# Menú interactivo para mostrar las gráficas de máximos
+# Cargar los datos
 datos = cargar_datos()
 maximos = maximo_por_categoria(datos)
 
+# Menú interactivo
 while True:
-    opcion = int(input("""¿Qué gráfica quieres visualizar?
-    1. Provincia con más defunciones
-    2. Provincia con más casos
-    3. Provincia con más hospitalizados
-    4. Provincia con más UCI
-    5. Salir
-    """))
+    try:
+        opcion = int(input("""¿Qué gráfica quieres visualizar?
+        1. Provincia con más defunciones
+        2. Provincia con más casos
+        3. Provincia con más hospitalizados
+        4. Provincia con más UCI
+        5. Salir
+        """))
 
-    if opcion in range(1, 5):
-        graficar_maximos(
-            {list(maximos.keys())[opcion-1]: maximos[list(maximos.keys())[opcion-1]]})
-    elif opcion == 5:
-        break
-    else:
-        print("Opción no válida, por favor selecciona un número del 1 al 5.")
+        if opcion == 1:
+            graficar_maximo("num_def", maximos)
+        elif opcion == 2:
+            graficar_maximo("new_cases", maximos)
+        elif opcion == 3:
+            graficar_maximo("num_hosp", maximos)
+        elif opcion == 4:
+            graficar_maximo("num_uci", maximos)
+        elif opcion == 5:
+            break
+        else:
+            print("Opción no válida, por favor selecciona un número del 1 al 5.")
+
+    except ValueError:
+        print("Error: Por favor, ingresa un número válido.")
